@@ -16,18 +16,39 @@
     %th
       Daily Spend allowed
   %tbody
-  - @budgets.each do |k, budget|
+    - sum_budget = BigDecimal(0)
+    - sum_expenses = BigDecimal(0)
+    - @budgets.each do |k, budget|
+      %tr
+        %td
+          = budget[:name]
+        %td
+          = budget[:budget].to_s('F')
+          - sum_budget += budget[:budget]
+        %td
+          = budget[:expenses].to_s('F')
+          - sum_expenses += budget[:budget]
+        %td
+          = (budget[:budget] - budget[:expenses]).to_s('F')
+        %td
+          = "%.2f" % ((budget[:budget] - budget[:expenses]) / days_left)
     %tr
       %td
-        = budget[:name]
+        %b
+          Total
       %td
-        = budget[:budget].to_s('F')
+        %b
+          = sum_budget.to_s('F')
       %td
-        = budget[:expenses].to_s('F')
+        %b
+          = sum_expenses.to_s('F')
       %td
-        = (budget[:budget] - budget[:expenses]).to_s('F')
+        %b
+          = (sum_budget - sum_expenses).to_s('F')
       %td
-        = "%.2f" % ((budget[:budget] - budget[:expenses]) / days_left)
+        %b
+          = "%.2f" % ((sum_budget - sum_expenses) / days_left)
+
          
 
 

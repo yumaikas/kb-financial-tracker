@@ -19,6 +19,44 @@ Sequel::Model.freeze_descendents
 DB.freeze
 
 
+def get_budgets
+  category_map = Hash.new 
+  DB[:categories].all().each do |cat|
+    category_map[cat[:cat_id]] = cat[:name]
+  end
+
+  transactions = DB[:transactions].
+    left_join(:categories_transactions, transaction_id: :transaction_id).
+    left_join(:categories, cat_id: :category_id).
+    all().
+    group_by { |tx| tx[:cat_id]}
+
+  sums_by_cat = Hash.new(BigDecimal(0))
+  transactions.each do |k, txgrp|
+    txgrp.each do |tx|
+      cat_id = tx[:category_id]
+      sums_by_cat[cat_id] += tx[:amount]
+    end
+  end
+
+  budgets = Hash.new
+  DB[:category_budgets].order(Sequel.desc(:budget)).all().each do |budget|
+    cat = budget[:category_id]
+    budgets[budget[:category_id]] = {
+      :name => category_map[cat],
+      :expenses => sums_by_cat[cat],
+      :budget => budget[:budget],
+      :category => cat
+    }
+  end
+
+  {
+    :budgets => budgets,
+    :transactions => transactions
+  }
+
+end
+
 set :haml, :format => :html5
 
 get "/" do
@@ -26,20 +64,16 @@ get "/" do
 end
 
 get "/record" do
-  @categories = DB[:categories].
-    left_join(:category_budgets, category_id: :cat_id).
-    all
+  money_info = get_budgets
+  @categories = money_info[:budgets]
   @chosen_category = nil
   haml :record_expense
 end
 
 get "/record/:category" do
   cat_id = Integer(params[:category])
-  @chosen_category = DB[:categories].
-    left_join(:category_budgets, category_id: :cat_id).
-    where(cat_id: cat_id).
-    first
-  puts @chosen_category
+  money_info = get_budgets
+  @chosen_category = money_info[:budgets][cat_id]
   haml :record_expense
 end
 
@@ -59,35 +93,11 @@ post "/record" do
 end
 
 get "/expenses" do
-  category_map = Hash.new 
-  DB[:categories].all().each do |cat|
-    category_map[cat[:cat_id]] = cat[:name]
-  end
 
-  @transactions = DB[:transactions].
-    left_join(:categories_transactions, transaction_id: :transaction_id).
-    left_join(:categories, cat_id: :category_id).
-    all().
-    group_by { |tx| tx[:cat_id]}
+  money_info = get_budgets
 
-  sums_by_cat = Hash.new(BigDecimal(0))
-  @transactions.each do |k, txgrp|
-    txgrp.each do |tx|
-      cat_id = tx[:category_id]
-      sums_by_cat[cat_id] += tx[:amount]
-    end
-  end
-
-  @budgets = Hash.new
-  DB[:category_budgets].order(Sequel.desc(:budget)).all().each do |budget|
-    cat = budget[:category_id]
-    @budgets[budget[:category_id]] = {
-      :name => category_map[cat],
-      :expenses => sums_by_cat[cat],
-      :budget => budget[:budget],
-      :category => cat
-    }
-  end
+  @budgets = money_info[:budgets]
+  @transactions = money_info[:transactions]
 
   haml :expense_dashboard
 

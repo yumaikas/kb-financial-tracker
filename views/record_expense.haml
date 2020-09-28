@@ -1,14 +1,14 @@
 %div(id="app_id")
   %form(action="/record" method="POST")
     - if @chosen_category.nil? 
-      - @categories.each do |c|
+      - @categories.each do |k, c|
         %li
-          %a(href="/record/#{c[:cat_id]}")
+          %a(href="/record/#{c[:category]}")
             - if not c[:budget].nil?
-              = "(#{c[:budget].to_s('F')})"
+              = "(#{(c[:budget] - c[:expenses]).to_s('F')})"
             = c[:name] 
     - else
-      %input(value="#{@chosen_category[:cat_id]}" type="hidden" name="chosen_category" id="chosen_category")
+      %input(value="#{@chosen_category[:category]}" type="hidden" name="chosen_category" id="chosen_category")
       %label.form-input
         Category
         %b.pad 

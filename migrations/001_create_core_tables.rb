@@ -20,6 +20,7 @@ Sequel.migration do
     create_table :transactions do
       primary_key :transaction_id
       BigDecimal :amount, null: false
+      DateTime :tx_time, default: Sequel.lit("CURRENT_TIMESTAMP")
     end
 
     create_table :transaction_notes do
@@ -38,7 +39,7 @@ Sequel.migration do
 
   end
 
-  def down
+  down do
     drop_table(:category_group_categories)
     drop_table(:category_groups)
     drop_table(:category_budgets)

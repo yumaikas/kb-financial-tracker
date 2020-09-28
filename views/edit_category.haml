@@ -4,6 +4,6 @@
 		%input.pad(type="text" name="category_name" id="category_name" value="#{@category[:name]}")
 	%label.form-input
 		Category Budget ($/month)
-		%input.pad(type="number" name="category_budget" id="category_budget" 
+		%input.pad(type="number" name="category_budget" id="category_budget" step="any"
 		value="#{(@category[:budget] or BigDecimal(0)).to_s('F')}")
 	%input.form-input(type="submit" value="Update!")

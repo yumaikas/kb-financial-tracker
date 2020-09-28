@@ -34,3 +34,14 @@ a:visited {
 	margin-left: 30px;
 	display: block;
 }
+
+table {
+	text-align: left;
+	border-spacing: 10px;
+	border-bottom: 1px #21ef9f;
+}
+
+th, td {
+	border-bottom: 1px solid #21ef9f;
+	border-right: 1px solid #21ef9f;
+}

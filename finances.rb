@@ -14,7 +14,6 @@ end
 
 DB = Sequel.sqlite('test.db')
 Sequel::Model.plugin :subclasses
-require_relative 'models'
 
 Sequel::Model.freeze_descendents
 DB.freeze

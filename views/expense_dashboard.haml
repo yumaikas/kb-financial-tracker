@@ -27,7 +27,7 @@
           - sum_budget += budget[:budget]
         %td
           = budget[:expenses].to_s('F')
-          - sum_expenses += budget[:budget]
+          - sum_expenses += budget[:expenses]
         %td
           = (budget[:budget] - budget[:expenses]).to_s('F')
         %td

@@ -6,7 +6,8 @@ require 'securerandom'
 require 'rack'
 
 
-set :bind, '0.0.0.0'
+set :bind, '0.0.0.0' if development?
+set :haml, :format => :html5
 
 def is_number? string
   true if Integer(string) rescue false
@@ -28,11 +29,12 @@ def get_budgets
   transactions = DB[:transactions].
     left_join(:categories_transactions, transaction_id: :transaction_id).
     left_join(:categories, cat_id: :category_id).
-    all().
-    group_by { |tx| tx[:cat_id]}
+    left_join(:transaction_notes, transaction_id: Sequel[:transactions][:transaction_id]).
+    order(:tx_time).
+    all()
 
   sums_by_cat = Hash.new(BigDecimal(0))
-  transactions.each do |k, txgrp|
+  transactions.group_by{|tx| tx[:cat_id]}.each do |k, txgrp|
     txgrp.each do |tx|
       cat_id = tx[:category_id]
       sums_by_cat[cat_id] += tx[:amount]
@@ -57,7 +59,6 @@ def get_budgets
 
 end
 
-set :haml, :format => :html5
 
 get "/" do
   haml :index
@@ -103,8 +104,79 @@ get "/expenses" do
 
 end
 
-put "/expense/:id" do
+get "/expense/:id/cat-change" do
+  tx_id_col = Sequel[:transactions][:transaction_id]
+  @tx = DB[:transactions].
+    left_join(:categories_transactions, transaction_id: :transaction_id).
+    left_join(:categories, cat_id: :category_id).
+    left_join(:transaction_notes, transaction_id: tx_id_col).
+    where({tx_id_col => Integer(params[:id])}).
+    first
+  money_info = get_budgets
+  @categories = money_info[:budgets]
 
+  @chosen_category = nil
+  haml :edit_expense
+end
+
+get "/expense/:id/cat-set-to/:cat_id" do
+  tx_id_col = Sequel[:transactions][:transaction_id]
+  @tx = DB[:transactions].
+    left_join(:categories_transactions, transaction_id: :transaction_id).
+    left_join(:categories, cat_id: :category_id).
+    left_join(:transaction_notes, transaction_id: tx_id_col).
+    where({tx_id_col => Integer(params[:id])}).
+    first
+
+
+  @chosen_category = get_budgets[:budgets][Integer(params[:cat_id])]
+  haml :edit_expense
+end
+
+get "/expense/:id" do
+  tx_id_col = Sequel[:transactions][:transaction_id]
+  @tx = DB[:transactions].
+    left_join(:categories_transactions, transaction_id: :transaction_id).
+    left_join(:categories, cat_id: :category_id).
+    left_join(:transaction_notes, transaction_id: tx_id_col).
+    where({tx_id_col => Integer(params[:id])}).
+    first
+
+  @chosen_category = get_budgets[:budgets][@tx[:cat_id]]
+  haml :edit_expense
+end
+
+post "/expense/:id" do
+  tx_id = Integer(params[:id])
+  amount = BigDecimal(params[:amount])
+  cat_id = Integer(params[:chosen_category])
+  old_cat_id = Integer(params[:old_category])
+  notes = params[:notes]
+
+  DB.transaction do
+    DB[:transactions].where(transaction_id: tx_id).update(amount: amount)
+    DB[:categories_transactions].where(category_id: old_cat_id, transaction_id: tx_id).delete
+    DB[:categories_transactions].insert(category_id: cat_id, transaction_id: tx_id)
+    unless notes.nil? then
+      DB[:transaction_notes].where(transaction_id: tx_id).update(note: notes)
+    end
+  end
+  redirect "/expense/#{tx_id}"
+end
+
+get "/expense/:id/delete" do
+  @tx_id = Integer(params[:id])
+  haml :delete_expense
+end
+
+post "/expense/:id/delete" do
+  tx_id = Integer(params[:id])
+  DB.transaction do
+    DB[:transaction_notes].where(transaction_id: tx_id).delete
+    DB[:categories_transactions].where(transaction_id: tx_id).delete
+    DB[:transactions].where(transaction_id: tx_id).delete
+  end
+  redirect "/"
 end
 
 get "/category/create" do

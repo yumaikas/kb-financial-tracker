@@ -1,0 +1,32 @@
+%div(id="app_id")
+  %form(action="/expense/#{@tx[:transaction_id]}" method="POST")
+    - if @chosen_category.nil? 
+      - @categories.each do |k, c|
+        %li
+          %a(href="/expense/#{@tx[:transaction_id]}/cat-set-to/#{c[:category]}")
+            - if not c[:budget].nil?
+              = "(#{(c[:budget] - c[:expenses]).to_s('F')})"
+            = c[:name] 
+    - else
+      %input(value="#{@chosen_category[:category]}" type="hidden" name="chosen_category" id="chosen_category")
+      %input(value="#{@tx[:cat_id]}" type="hidden" name="old_category")
+      %label.form-input
+        Category
+        %b.pad 
+          = @chosen_category[:name]
+          %a(href="/expense/#{@tx[:transaction_id]}/cat-change")
+            Change Category
+    %label.form-input
+      Amount
+      %input.pad(type="number" step="any" name="amount" id="amount"
+        value="#{@tx[:amount].to_s('F')}"
+        )
+    %label.form-input
+      Notes
+      %input.pad(type="text" name="notes" id="notes" value="#{@tx[:note]}")
+    - if not @chosen_category.nil?
+      %label.form-input
+        %input.pad(type="submit" value="Save Expense")
+  %h5
+    %a(href="/expense/#{@tx[:transaction_id]}/delete")
+      Delete this expense

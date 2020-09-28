@@ -1,0 +1,10 @@
+%h2 
+  Are you sure you want to delete this expense?
+
+%form
+  %h3
+    %button(type="submit" formmethod="get" formaction="/expense/#{@tx_id}" value="No, I don't")
+      No, I don't
+  %h4
+    %button(formaction="/expense/#{@tx_id}/delete" formmethod="post" value="Yes, I want to delete it")
+      Yes, I want to delete this

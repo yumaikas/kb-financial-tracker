@@ -1,0 +1,19 @@
+!!!
+%html
+  %head
+    %title Finance Tracker
+    %link(rel="stylesheet" href="/css/app.css")
+    %meta(name="viewport" content="width=device-width, initial-scale=1.0")
+
+  %body
+    #wrapper
+      #header
+        %h1 
+          %a(href="/")
+            Track your finances!
+
+      #content
+        =yield
+
+  %footer
+    %script(src="/js/gotoB.min.js")

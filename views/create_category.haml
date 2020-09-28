@@ -1,0 +1,17 @@
+%form(action="/category" method="POST")
+	%label.one-per-line
+		Category Name
+		%input(type="text" name="category_name" id="category_name")
+	%input.one-per-line(type="submit" value="Create!")
+
+%ul
+	- @categories.each do |c|
+		%li
+			%a(href="/category/edit/#{c[:cat_id]}")
+				- if not c[:budget].nil?
+					= "(#{c[:budget].to_s('F')})"
+				= c[:name] 
+
+%div
+	Total Budget:
+	= "$" + @categories.reduce(BigDecimal(0)) {|sum, cat| (cat[:budget] or 0) + sum}.to_s('F')

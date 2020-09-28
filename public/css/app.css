@@ -1,0 +1,36 @@
+body {
+ max-width:1200px;
+ width:90%
+}
+body, input, textarea {
+ font-family:Iosevka,monospace;
+ background:#191e2a;
+ color:#21ef9f
+}
+td {
+ margin:5px
+}
+a {
+ color:#0ff
+}
+a:visited {
+ color:#008b8b
+}
+
+.one-per-line {
+	display: block;
+}
+
+.form-input {
+	display: block;
+	margin-top: 10px;
+}
+
+.form-input input:nth-child(1) {
+	margin-top: 10px;
+}
+
+.pad {
+	margin-left: 30px;
+	display: block;
+}

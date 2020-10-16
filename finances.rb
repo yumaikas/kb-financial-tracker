@@ -4,6 +4,7 @@ require 'sequel'
 require 'haml'
 require 'securerandom'
 require 'rack'
+require 'Date'
 
 
 set :bind, '0.0.0.0' if development?
@@ -19,8 +20,21 @@ Sequel::Model.plugin :subclasses
 Sequel::Model.freeze_descendents
 DB.freeze
 
+CURR_MONTH = "Current_Month"
+TARGET_DATE = "Target_Date"
+
+
+def get_current_month
+  DB[:settings].where(key: CURR_MONTH).first[:value]
+end
+
+def get_target_day
+  date_value = DB[:settings].where(key: TARGET_DATE).first[:value]
+  Date.strptime(date_value, "%Y-%m-%d")
+end
 
 def get_budgets
+  curr_month = get_current_month
   category_map = Hash.new 
   DB[:categories].all().each do |cat|
     category_map[cat[:cat_id]] = cat[:name]
@@ -30,6 +44,7 @@ def get_budgets
     left_join(:categories_transactions, transaction_id: :transaction_id).
     left_join(:categories, cat_id: :category_id).
     left_join(:transaction_notes, transaction_id: Sequel[:transactions][:transaction_id]).
+    where(month_year: curr_month).
     order(:tx_time).
     all()
 
@@ -61,6 +76,7 @@ end
 
 
 get "/" do
+  @current_month = get_current_month
   haml :index
 end
 
@@ -78,6 +94,23 @@ get "/record/:category" do
   haml :record_expense
 end
 
+get "/settings" do
+  @settings = DB[:settings]
+  haml :settings
+end
+
+get "/settings/:key" do
+  @setting = DB[:settings].where(key: params[:key]).first
+  haml :show_setting
+end
+
+post "/settings/:key" do
+  DB[:settings].insert_conflict(:replace).
+    insert(key: params[:key], value: params[:setting_value])
+
+  redirect "/"
+end
+
 post "/record" do
   amount = BigDecimal(params[:amount])
   cat_id = Integer(params[:chosen_category])
@@ -85,7 +118,7 @@ post "/record" do
 
   DB.transaction do
     tr_id = DB[:transactions].insert(amount: amount)
-    DB[:categories_transactions].insert(category_id: cat_id, transaction_id: tr_id)
+    DB[:categories_transactions].insert(category_id: cat_id, transaction_id: tr_id, month_year: get_current_month)
     unless notes.nil? then
       DB[:transaction_notes].insert(transaction_id: tr_id, note: notes)
     end
@@ -99,6 +132,7 @@ get "/expenses" do
 
   @budgets = money_info[:budgets]
   @transactions = money_info[:transactions]
+  @target_day = get_target_day
 
   haml :expense_dashboard
 
@@ -151,10 +185,12 @@ post "/expense/:id" do
   amount = BigDecimal(params[:amount])
   cat_id = Integer(params[:chosen_category])
   old_cat_id = Integer(params[:old_category])
+  month_year = params[:month_year]
+
   notes = params[:notes]
 
   DB.transaction do
-    DB[:transactions].where(transaction_id: tx_id).update(amount: amount)
+    DB[:transactions].where(transaction_id: tx_id).update(amount: amount, month_year: month_year)
     DB[:categories_transactions].where(category_id: old_cat_id, transaction_id: tx_id).delete
     DB[:categories_transactions].insert(category_id: cat_id, transaction_id: tx_id)
     unless notes.nil? then

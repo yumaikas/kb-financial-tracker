@@ -17,13 +17,16 @@
           %a(href="/expense/#{@tx[:transaction_id]}/cat-change")
             Change Category
     %label.form-input
-      Amount
+      Amount:
       %input.pad(type="number" step="any" name="amount" id="amount"
         value="#{@tx[:amount].to_s('F')}"
         )
     %label.form-input
-      Notes
+      Notes:
       %input.pad(type="text" name="notes" id="notes" value="#{@tx[:note]}")
+    %label.form-input
+      Month:
+      %input.pad(type="text" name="month_year" id="month_year" value="#{@tx[:month_year]}")
     - if not @chosen_category.nil?
       %label.form-input
         %input.pad(type="submit" value="Save Expense")

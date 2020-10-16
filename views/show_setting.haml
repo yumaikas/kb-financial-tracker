@@ -1,0 +1,9 @@
+%h2 
+	Editing setting
+	= '"' + @setting[:key] + '"'
+
+%form(action="/settings/#{@setting[:key]}" method="POST")
+	%label
+		Setting value:
+		%input(type="text" name="setting_value" value="#{@setting[:value]}")
+	%input(type="submit" value="save")

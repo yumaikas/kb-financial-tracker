@@ -1,0 +1,7 @@
+%h2
+	Settings
+
+- @settings.each do |s|
+	%h4
+		%a(href="/settings/#{s[:key]}")
+			= s[:key]

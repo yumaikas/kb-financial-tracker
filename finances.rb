@@ -117,8 +117,8 @@ post "/record" do
   notes = params[:notes]
 
   DB.transaction do
-    tr_id = DB[:transactions].insert(amount: amount)
-    DB[:categories_transactions].insert(category_id: cat_id, transaction_id: tr_id, month_year: get_current_month)
+    tr_id = DB[:transactions].insert(amount: amount, month_year: get_current_month)
+    DB[:categories_transactions].insert(category_id: cat_id, transaction_id: tr_id)
     unless notes.nil? then
       DB[:transaction_notes].insert(transaction_id: tr_id, note: notes)
     end

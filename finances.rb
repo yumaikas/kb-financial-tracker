@@ -4,7 +4,7 @@ require 'sequel'
 require 'haml'
 require 'securerandom'
 require 'rack'
-require 'Date'
+require 'date'
 
 
 set :bind, '0.0.0.0' if development?

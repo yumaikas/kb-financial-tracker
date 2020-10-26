@@ -1,6 +1,7 @@
 %h2 
   Current Budget
   - d_now = DateTime.now
+  - d_today = DateTime.new(d_now.year, d_now.month, d_now.day)
   - days_left = @target_day - d_now
 
 %table

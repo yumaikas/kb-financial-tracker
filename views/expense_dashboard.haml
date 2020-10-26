@@ -51,7 +51,7 @@
           = "%.2f" % ((sum_budget - sum_expenses) / days_left)
 
 %h3
-  = "Days left in month: #{days_left.to_s('F')}" 
+  = "Days left in month: #{BigDecimal(days_left).to_s('F')}" 
 
 %h2 
   Expenses on record

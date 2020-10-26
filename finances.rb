@@ -23,7 +23,6 @@ DB.freeze
 CURR_MONTH = "Current_Month"
 TARGET_DATE = "Target_Date"
 
-
 def get_current_month
   DB[:settings].where(key: CURR_MONTH).first[:value]
 end

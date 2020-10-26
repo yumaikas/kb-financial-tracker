@@ -404,7 +404,7 @@ get "/accounts" do
       :account_id => a[:account_id],
       :name => a[:name],
       :amount => a[:amount],
-      :allocated => BigDecimal(alloc_sums.fetch(a[:account_id], 0), 2)
+      :allocated => BigDecimal(alloc_sums.fetch(a[:account_id], 0), 15)
     }
   end
 

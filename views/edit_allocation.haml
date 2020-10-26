@@ -1,0 +1,13 @@
+%h2 
+  Edit Allocation
+
+%form{action: "/allocation/#{@allocation[:allocation_id]}", method: "POST"}
+  %label.one-per-line
+    Allocation Name:
+    %input.one-per-line{type: "text", name: "description", value: @allocation[:description] }
+
+  %label.one-per-line
+    Amount:
+    %input.one-per-line{type: "number", step:"any", name: "amount", value: @allocation[:amount].to_s('F')}
+
+  %input{type: "submit", value: "Save"}

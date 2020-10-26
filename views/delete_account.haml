@@ -1,0 +1,17 @@
+%h2
+  Delete account?
+
+%h4
+  Amount:
+  = @account[:amount].to_s('F')
+
+%h4
+  Name:
+  = @account[:name]
+
+- id = @account[:account_id]
+
+%form{action: "/account/delete/#{id}", method: "POST"}
+  %input.one-per-line{type: "submit", formaction: "/accounts", formmethod: "GET", value: "No, don't delete this account" }
+  %input.one-per-line{type: "submit", value: "Yes, delete this account"}
+

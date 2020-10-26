@@ -1,0 +1,19 @@
+%h2
+  Allocating money for 
+  = @account[:name]
+  account
+
+- unallocated = (@account[:amount] - @allocations.sum{|a| a[:amount]})
+%h4
+  Unallocated:
+  = unallocated.to_s('F')
+
+
+%form{method: "POST", action: "/allocation/#{@account[:account_id]}/create"}
+  %label.one-per-line
+    Name:
+    %input.one-per-line{name: "name"}
+  %label.one-per-line
+    Amount:
+    %input.one-per-line{name: "amount", type: "number", step: "any"}
+  %input.one-per-line{type:"submit", value: "Save"}

@@ -1,0 +1,35 @@
+%h2
+  Accounts overview
+
+%table
+  %tr
+    %th
+      Name
+    %th
+      Balance
+    %th
+      Allocated
+    %th
+      Edit
+    %th
+      Remove
+  - @accounts.each do |a|
+    %tr
+      %td
+        %a{href: "/account/#{a[:account_id]}"}
+          = a[:name]
+      %td
+        = a[:amount].to_s('F')
+      %td
+        = (a[:allocated] or BigDecimal(0)).to_s('F')
+      %td
+        %a{href: "/account/edit/#{a[:account_id]}"}
+          Edit
+      %td
+        %a{href: "/account/delete/#{a[:account_id]}"}
+          Remove
+
+
+%h4
+  %a{href: "/account/create"}
+    Add an account

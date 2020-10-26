@@ -1,0 +1,45 @@
+%h2 
+  = @account[:name]
+
+%h4
+  Amount: 
+  = @account[:amount].to_s('F')
+
+
+- if (@allocations or []).length > 0
+  %h3
+    Allocations
+  %table
+    %tr
+      %th
+        Category
+      %th
+        Amount
+      %th
+        Remove
+    - @allocations.each do |a|
+      %tr
+        %td
+          %a{href: "/allocation/#{a[:allocation_id]}" }
+            = a[:description]
+        %td
+          = a[:amount].to_s('F')
+        %td
+          %a{href: "/allocation/#{a[:allocation_id]}/delete" }
+            Remove
+
+    %tr
+      %td
+        Total Allocated
+      %td
+        = @allocations.sum{|a| a[:amount]}.to_s('F')
+      %td
+    %tr
+      %td
+        Unallocated
+      %td
+        = (@account[:amount] - @allocations.sum{|a| a[:amount]}).to_s('F')
+      %td
+%h3
+  %a{href: "/allocation/#{@account[:account_id]}/create"}
+    Add allocation

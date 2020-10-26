@@ -1,0 +1,13 @@
+%h2 
+  Create Account
+
+%form{action: "/account/create", method: "POST"}
+  %label.one-per-line
+    Account name:
+    %input.one-per-line{type: "text", name: "name"}
+
+  %label.one-per-line
+    Initial amount:
+    %input.one-per-line{type: "number", step:"any", name: "amount"}
+
+  %input{type: "submit", value: "Save"}

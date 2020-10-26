@@ -1,0 +1,20 @@
+%h2
+  Delete allocation?
+
+%h4
+  Amount:
+  = @allocation[:amount].to_s('F')
+
+%h4
+  Name:
+  = @allocation[:description]
+ 
+- id = @allocation[:allocation_id]
+- acnt_id = @allocation[:account_id]
+
+
+
+%form{action: "/allocation/#{id}/delete", method: "POST" }
+  %input.one-per-line{formmaction: "/accounts", formmethod: "GET"}
+    No, don't delete this expense
+  %input.one-per-line{type: "submit", value: "Yes, delete this allocation"}

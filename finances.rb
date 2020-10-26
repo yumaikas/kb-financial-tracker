@@ -277,3 +277,138 @@ post "/upload_image" do
   id = DB[:images].insert(path: "./public/images/#{filename}")
   redirect "/images/#{id}"
 end
+
+ACCOUNTS = DB[:accounts].freeze
+ALLOCATIONS = DB[:account_allocation].freeze
+
+get "/allocation/:account_id/create" do
+  account_id =  Integer(params[:account_id])
+  @account = ACCOUNTS.where(account_id: account_id).first
+  @allocations = ALLOCATIONS.where(account_id: account_id).all
+  haml :create_allocation
+end
+
+post "/allocation/:account_id/create" do
+  account_id =  Integer(params[:account_id])
+  amount = BigDecimal(params[:amount])
+  allocation_name = params[:name]
+
+  ALLOCATIONS.insert(
+    account_id: account_id, 
+    amount: amount,
+    description: allocation_name)
+
+  redirect "/account/#{account_id}"
+end
+
+get "/allocation/:id/delete" do
+  alloc_id =  Integer(params[:id])
+  @allocation = ALLOCATIONS.where(allocation_id: alloc_id).first
+  acnt_id = @allocation[:account_id]
+
+  @account = ACCOUNTS.where(account_id: acnt_id)
+
+  haml :delete_allocation
+end
+
+get "/allocation/:id" do
+  alloc_id =  Integer(params[:id])
+  @allocation = ALLOCATIONS.where(allocation_id: alloc_id).first
+
+  haml :edit_allocation
+end
+
+post "/allocation/:id" do
+  alloc_id =  Integer(params[:id])
+  desc = params[:description]
+  amount = BigDecimal(params[:amount])
+  account_id = ALLOCATIONS.where(allocation_id: alloc_id).first[:account_id]
+  @allocation = ALLOCATIONS.
+    where(allocation_id: alloc_id).
+    update(description: desc, amount: amount)
+
+  redirect "/account/#{account_id}"
+end
+
+ post "/allocation/:id/delete" do
+  alloc_id =  Integer(params[:id])
+  account_id = ALLOCATIONS.where(allocation_id: alloc_id).first[:account_id]
+  ALLOCATIONS.where(allocation_id: alloc_id).delete()
+  redirect "/accounts"
+end
+
+get "/account/create" do
+  haml :create_account
+end
+
+post "/account/create" do
+  _name = params[:name]
+  amount = BigDecimal(params[:amount])
+  ACCOUNTS.insert(name: _name, amount: amount)
+
+  redirect "/accounts"
+end
+
+
+get "/account/edit/:id" do
+  id = Integer(params[:id])
+  @account = ACCOUNTS.where(account_id: id).first
+  @allocations = ALLOCATIONS.where(account_id: id).all
+
+  haml :edit_account
+end
+
+post "/account/edit/:id" do
+  id = Integer(params[:id])
+  _name = params[:name]
+  amount = BigDecimal(params[:amount])
+
+  ACCOUNTS.where(account_id: id).update(name: _name, amount: amount)
+  redirect "/account/#{id}"
+end
+
+get "/account/delete/:id" do
+  id = Integer(params[:id])
+  @account = ACCOUNTS.where(account_id: id).first
+  haml :delete_account
+end
+
+post "/account/delete/:id" do
+  id = Integer(params[:id])
+  ACCOUNTS.where(account_id: id).delete()
+  redirect "/accounts"
+end
+
+get "/account/:id" do
+  id = Integer(params[:id])
+  @account = ACCOUNTS.where(account_id: id).first
+  @allocations = ALLOCATIONS.where(account_id: id).all
+
+  haml :view_account
+end
+
+
+get "/accounts" do
+  # Build up a list of allocations for each account
+  # So that we can do stats to them
+  alloc_sums = ALLOCATIONS.
+    group_by(:account_id).
+    select{[account_id, sum(amount).as('amount')]}.all.
+    map{|a| [a[:account_id], a[:amount]] }.to_h
+
+  @allocs = ALLOCATIONS.all
+
+  @alloc_sums = alloc_sums
+
+  @accounts = DB[:accounts].all.map do |a|
+    {
+      :account_id => a[:account_id],
+      :name => a[:name],
+      :amount => a[:amount],
+      :allocated => BigDecimal(alloc_sums.fetch(a[:account_id], 0))
+    }
+  end
+
+  haml :accounts
+
+end
